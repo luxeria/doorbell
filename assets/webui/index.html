@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Doorbell API</title>
+  <script src="doorbell.js" async></script>
+  <style>
+    .grecaptcha-badge {
+      visibility: hidden;
+    }
+  </style>
+</head>
+<body>
+<script>
+    REPATCHA_SITE_KEY = {{ .RecaptchaSiteKey }};
+</script>
+<button>Ring!</button>
+
+This site is protected by reCAPTCHA and the Google
+<a href="https://policies.google.com/privacy">Privacy Policy</a> and
+<a href="https://policies.google.com/terms">Terms of Service</a> apply.
+</body>
+</html>
