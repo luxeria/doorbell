@@ -11,10 +11,12 @@ import (
 )
 
 func main() {
+	values := webui.Values{
+		"RecaptchaSiteKey": env.String("RECAPTCHA_SITE_KEY"),
+	}
 	webUi, err := webui.New("assets/webui/", webui.Context{
-		"index.html": webui.Values{
-			"RecaptchaSiteKey": env.String("RECAPTCHA_SITE_KEY"),
-		},
+		"index.html": values,
+		"config.js": values,
 	})
 	if err != nil {
 		log.Fatalf("failed to load webui: %s", err)
