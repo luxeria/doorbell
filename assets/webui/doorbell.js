@@ -11,7 +11,10 @@ async function authVerifyRecaptcha(captchaResponse) {
     });
 
     if (!resp.ok) {
-        throw new Error(resp.statusText);
+        const message = await resp.json()
+            .then(msg => msg.error)
+            .catch(() => resp.statusText);
+        throw new Error(message);
     }
 
     return await resp.json()
@@ -37,8 +40,6 @@ async function ringDoorbell(authToken, maxTries = 2) {
             throw new Error(message)
         }
     }
-
-    return resp.ok;
 }
 
 class AuthToken {
@@ -68,7 +69,15 @@ const userToken = new AuthToken(config);
 window.addEventListener("load", () => {
     document
         .querySelector(".doorbell")
-        .addEventListener("click", async () => {
-            await ringDoorbell(userToken);
+        .addEventListener("click", async (e) => {
+            let msg;
+            try {
+                await ringDoorbell(userToken);
+                msg = "Success";
+            } catch (e) {
+                msg = e ? e.toString() : "An unknown error occurred";
+            } finally {
+                document.querySelector("#message").innerText = msg;
+            }
         });
 });

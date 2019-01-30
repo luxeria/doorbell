@@ -77,7 +77,7 @@ func (a *Auth) AuthRecaptcha() http.Handler {
 		}
 
 		if v.Score < a.recaptchaMinScore {
-			rest.Error(w, r, fmt.Errorf("recaptcha score (%f) too low", v.Score), http.StatusUnauthorized)
+			rest.Error(w, r, fmt.Errorf("recaptcha score (%.2f) too low", v.Score), http.StatusUnauthorized)
 			return
 		}
 

@@ -2,20 +2,85 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Luxeria Doorbell</title>
   <script src="doorbell.js" type="module"></script>
   <script src="https://www.google.com/recaptcha/api.js?render={{ .RecaptchaSiteKey }}" async></script>
   <style>
+    body {
+      background: #f2f2f2;
+      max-width: 400px;
+      margin: 25px auto;
+      text-align: center;
+      font-family: sans-serif;
+      padding: 0 25px;
+    }
+
+    #logo {
+      height: 60px;
+      margin: 15px auto 20px;
+    }
+
+    .doorbell {
+      width: 100%;
+      height: 200px;
+      padding: 12px;
+      color: #FFF;
+      background-color: #0099FF;
+      border-radius: 10px;
+      border: 5px solid transparent;
+      box-shadow: 0px 16px 0px 0px #007ACC;
+      margin-bottom: 16px;
+      outline: none;
+    }
+
+    .doorbell:active {
+      box-shadow: 0px 8px 0px 0px #007ACC;
+      transform: translate(0px, 8px);
+      transition: all .15s;
+    }
+
     .grecaptcha-badge {
       visibility: hidden;
+    }
+
+    .grecaptcha-note {
+      color: #ababab;
+      font-size: 8pt;
+      margin: 10px 0;
+    }
+
+    .grecaptcha-note a {
+      color: inherit;
+    }
+
+    #message {
+      padding: 1ex;
     }
   </style>
 </head>
 <body>
-<button class="doorbell">Ring!</button>
+<img src="luxeria.svg" alt="Luxeria" id="logo">
+<button class="doorbell">
+  <svg xmlns="http://www.w3.org/2000/svg" width="85" height="78" version="1">
+    <g fill="#fff">
+      <path d="M57 10l-1 3 1 1c7 3 12 11 13 19l1 1h3l1-1c-1-10-7-19-16-24l-2 1z"/>
+      <path d="M61 1l-1 2 1 2c11 5 18 16 19 28l1 1h3l1-1C84 19 76 6 63 0l-2 1z"/>
+      <g>
+        <path d="M27 10l2 3-1 1c-8 3-13 11-13 19l-1 1h-3l-1-1c0-10 7-19 16-24l1 1z"/>
+        <path d="M24 1l1 2-1 2C13 10 5 21 5 33l-1 1H1l-1-1C0 19 9 6 22 0l2 1z"/>
+      </g>
+      <path
+          d="M71 55l-5-6V39c0-10-6-19-15-22-1-4-4-7-9-7-4 0-7 3-8 7-9 3-15 12-15 22v10l-6 6v9c0 2 1 3 2 3h17c0 5 5 10 10 10 6 0 11-5 11-10h17c1 0 2-1 2-3v-8l-1-1zM42 72c-3 0-5-3-5-5h11c0 2-3 5-6 5zm25-10H18v-5l6-6V39c0-9 6-17 15-19v-1c0-3 1-4 3-4 3 0 4 1 4 4v1c9 2 15 10 15 19v12l6 6z"/>
+    </g>
+  </svg>
+  <div id="message"></div>
+</button>
 
-This site is protected by reCAPTCHA and the Google
-<a href="https://policies.google.com/privacy">Privacy Policy</a> and
-<a href="https://policies.google.com/terms">Terms of Service</a> apply.
+<p class="grecaptcha-note">
+  This site is protected by reCAPTCHA and the Google
+  <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+  <a href="https://policies.google.com/terms">Terms of Service</a> apply.
+</p>
 </body>
 </html>
