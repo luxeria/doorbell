@@ -62,6 +62,10 @@ body {
     }
 }
 
+.animate {
+    animation: shake .9s cubic-bezier(.36, .07, .19, .97) both;
+}
+
 @keyframes shake {
     10%, 90% {
         transform: translate3d(-1px, 0, 0);
@@ -78,8 +82,4 @@ body {
     40%, 60% {
         transform: translate3d(4px, 0, 0);
     }
-}
-
-.animate {
-    animation: shake .9s cubic-bezier(.36, .07, .19, .97) both;
 }
