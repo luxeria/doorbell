@@ -21,7 +21,7 @@ type Claims struct {
 	ExpiresAt int64  `json:"exp,omitempty"`
 }
 
-const jwtAlgorithm = "HS257"
+const jwtAlgorithm = "HS256"
 const jwtType = "JWT"
 
 func decodeBase64JSON(s string, v interface{}) error {
