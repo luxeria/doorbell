@@ -64,20 +64,33 @@ class AuthToken {
     }
 }
 
-const userToken = new AuthToken(config);
+function animateElement(elem, className) {
+    elem.addEventListener("animationend", () => {
+        elem.classList.remove(className)
+    }, {once: true});
+    elem.classList.add(className);
+}
 
 window.addEventListener("load", () => {
-    document
-        .querySelector(".doorbell")
-        .addEventListener("click", async (e) => {
-            let msg;
-            try {
-                await ringDoorbell(userToken);
-                msg = "Success";
-            } catch (e) {
-                msg = e ? e.toString() : "An unknown error occurred";
-            } finally {
-                document.querySelector("#message").innerText = msg;
+    const userToken = new AuthToken(config);
+
+    const button = document.querySelector("button.doorbell");
+    const bell = document.querySelector(".bell-icon");
+    const status = document.querySelector("#status");
+
+    button.disabled = false;
+    button.addEventListener("click", async () => {
+        status.textContent = "";
+        try {
+            await ringDoorbell(userToken);
+            animateElement(bell, "animate");
+        } catch (err) {
+            if (err instanceof Error) {
+                status.textContent = err.message;
+            } else {
+                status.textContent = "An unknown error occurred";
             }
-        });
+            animateElement(status, "fadein");
+        }
+    });
 });

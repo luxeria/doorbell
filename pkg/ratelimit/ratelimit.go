@@ -66,13 +66,13 @@ func (b *Bucket) TakeAt(now time.Time) bool {
 		b.tokens += refill
 	}
 
-	// update timestamp
-	b.lastUpdate = now
-
 	// return false if no tokens left
 	if b.tokens == 0 {
 		return false
 	}
+
+	// update timestamp
+	b.lastUpdate = now
 
 	// take a token
 	b.tokens -= 1
