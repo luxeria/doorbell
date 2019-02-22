@@ -1,0 +1,6 @@
+image: doorbell
+org: luxeria
+network: true
+config:
+  capabilities:
+    - CAP_SYS_ADMIN
