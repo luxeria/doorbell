@@ -32,7 +32,7 @@ func main() {
 	bellApi := doorbell.New(doorbell.Config{
 		OpeningHours: env.OpeningHours("OPENING_HOURS", "Mo-Su 00:00-00:00"),
 		RateLimit:    env.RateLimit("RATELIMIT_BURST", "3/10s"),
-		DoorbellCmd:  env.StringSlice("DOORBELL_CMD", `["mpv", "assets/dingdong.mp3"]`),
+		DoorbellCmd:  env.StringSlice("DOORBELL_CMD", `["mpg123", "assets/dingdong.mp3"]`),
 	})
 
 	http.Handle("/webui/", http.StripPrefix("/webui/", webUi))
