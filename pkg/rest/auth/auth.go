@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -98,6 +99,8 @@ func (a *Auth) AuthRecaptcha() http.Handler {
 	}))
 }
 
+const jwtContextKey = "jwt_claims"
+
 func (a *Auth) CheckJwt(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		const prefix = "Bearer "
@@ -108,11 +111,18 @@ func (a *Auth) CheckJwt(h http.Handler) http.Handler {
 			token = strings.TrimSpace(authorization[len(prefix):])
 		}
 
-		_, err := jwt.Verify(token, a.jwtSecret)
+		claims, err := jwt.Verify(token, a.jwtSecret)
 		if err != nil {
 			rest.Error(w, r, err, http.StatusUnauthorized)
-		} else {
-			h.ServeHTTP(w, r)
+			return
 		}
+
+		ctx := context.WithValue(r.Context(), jwtContextKey, claims)
+		h.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func ExtractJwtClaims(r *http.Request) (jwt.Claims, bool) {
+	claims, ok := r.Context().Value(jwtContextKey).(jwt.Claims)
+	return claims, ok
 }

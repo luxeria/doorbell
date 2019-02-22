@@ -40,5 +40,7 @@ func main() {
 	http.Handle("/ring", authApi.CheckJwt(bellApi.Ring()))
 	http.Handle("/", http.RedirectHandler("/webui/", http.StatusFound))
 
-	log.Fatalln(http.ListenAndServe(env.Addr("PORT", "8080"), nil))
+	addr := env.Addr("PORT", "8080")
+	log.Printf("doorbell api listening on %s", addr)
+	log.Fatalln(http.ListenAndServe(addr, nil))
 }

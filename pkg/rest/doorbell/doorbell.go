@@ -2,11 +2,12 @@ package doorbell
 
 import (
 	"errors"
+	"github.com/luxeria/doorbell/pkg/rest/auth"
 	"log"
 	"net/http"
 	"os/exec"
 	"strings"
-	
+
 	"github.com/luxeria/doorbell/pkg/openinghours"
 	"github.com/luxeria/doorbell/pkg/ratelimit"
 	"github.com/luxeria/doorbell/pkg/rest"
@@ -61,6 +62,12 @@ func (d *Doorbell) Ring() http.Handler {
 		if err != nil {
 			rest.Error(w, r, err, http.StatusInternalServerError)
 			return
+		}
+
+		if c, ok := auth.ExtractJwtClaims(r); ok {
+			log.Printf("%q is ringing doorbell!", c.Subject)
+		} else {
+			log.Println("unknown user is ringing doorbell!")
 		}
 
 		// wait for completion in background
