@@ -2,5 +2,8 @@ image: doorbell
 org: luxeria
 network: true
 config:
+  binds:
+    - /etc/resolv.conf:/etc/resolv.conf
+    - /dev/snd:/dev/snd
   capabilities:
     - CAP_SYS_ADMIN
