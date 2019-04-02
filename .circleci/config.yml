@@ -1,0 +1,117 @@
+version: 2.1
+
+executors:
+  native:
+    docker:
+      - image: linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b
+  dockerd_arm64:
+    docker:
+      - image: linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b
+        environment:
+          DOCKER_HOST: tcp://localhost:2375
+      - image: linuxkitrpi/dockerd-arm64:055c8da09206ccc107a12ccd2d095507ae1f8c59
+
+commands:
+  wait_for_docker:
+    steps:
+      - run:
+          name: Wait for dockerd to come up
+          command: |
+            while [ -z "$(docker version --format '{{.Server.Version}}' 2>/dev/null)" ] ; do
+              sleep 1
+            done
+  save_docker_cache:
+    parameters:
+      build_log:
+        type: string
+        default: "build.log"
+      key:
+        type: string
+    steps:
+      - run:
+          name: Save Layers to Cache
+          command: |
+            # filter out empty layers
+            IMAGES=""
+            for i in $(sed -n 's/^ ---> \([[:xdigit:]]\+\)\w*$/\1/p' << parameters.build_log >>) ; do
+              if [ "$(docker inspect --format '{{.Size}}' "$i")" -gt 0 ] ; then
+                IMAGES="$IMAGES $i"
+              fi
+            done
+            # save layers (if there are any)
+            mkdir -p /var/cache/layers
+            if [ -n "$IMAGES" ] ; then
+              docker save -o "/var/cache/layers/build.tar" $IMAGES
+            fi
+          no_output_timeout: 15m
+      - save_cache:
+          key: << parameters.key >>
+          paths:
+            - /var/cache/layers
+  restore_docker_cache:
+    parameters:
+      key:
+        type: string
+    steps:
+      - restore_cache:
+          keys:
+            - << parameters.key >>
+      - run:
+          name: Restore Layers from Cache
+          command: docker load -i /var/cache/layers/build.tar || true
+          no_output_timeout: 15m
+jobs:
+  build_pkg_arm64:
+    executor: dockerd_arm64
+    steps:
+      - checkout
+      - wait_for_docker
+      - restore_docker_cache:
+          key: v1-images-arm64
+      - run:
+          name: Build Docker Image for arm64
+          command: |
+            # spawn a background container for running the linuxkit-cli on arm64
+            docker run -t -i -d -e DOCKER_HOST -v /workspace -w /workspace \
+              --network host --name linuxkit-cli linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b cat
+            docker cp -a . linuxkit-cli:/workspace
+            # build linuxkit package
+            docker exec -t linuxkit-cli \
+              linuxkit pkg build -force -disable-content-trust . | tee -a build.log
+            # save for push stage
+            docker save -o "/run/images/doorbell-arm64.tar" "$(linuxkit pkg show-tag .)-arm64"
+          no_output_timeout: 30m
+      - persist_to_workspace:
+          root: /run/images
+          paths:
+            - doorbell-arm64.tar
+      - save_docker_cache:
+          key: v1-images-arm64-{{ .BuildNum }}
+  build_pkg_amd64:
+    executor: native
+    steps:
+      - checkout
+      - setup_remote_docker
+      - restore_docker_cache:
+          key: v1-images-amd64
+      - run:
+          name: Build Docker Image for amd64
+          command: |
+            # build linuxkit package
+            linuxkit pkg build -force -disable-content-trust . | tee -a build.log
+            # save for push stage
+            docker save -o "/run/images/doorbell-amd64.tar" "$(linuxkit pkg show-tag .)-amd64"
+          no_output_timeout: 30m
+      - persist_to_workspace:
+          root: /run/images
+          paths:
+            - doorbell-amd64.tar
+      - save_docker_cache:
+          key: v1-images-amd64-{{ .BuildNum }}
+
+workflows:
+  version: 2
+  build_and_push:
+    jobs:
+      - build_pkg_amd64
+      - build_pkg_arm64
