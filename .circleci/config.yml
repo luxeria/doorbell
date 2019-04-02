@@ -82,7 +82,16 @@ jobs:
           command: docker login -u "$DOCKER_LOGIN" -p "$DOCKER_PASSWORD"
       - run:
           name: Pushing Docker Image
-          command: linuxkit pkg push -nobuild -disable-content-trust .
+          command: |
+            # push images from previous stages (if any)
+            IMAGES=$(docker images --filter 'reference=luxeria/doorbell:*' --format '{{.Repository}}:{{.Tag}}')
+            for img in $IMAGES ; do
+              docker push "$img"
+            done
+            # push multiarch linuxkit image
+            if [ -n "$IMAGES" ]; then
+              linuxkit pkg push -nobuild -disable-content-trust .
+            fi
 
 workflows:
   version: 2
