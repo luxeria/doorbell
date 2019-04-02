@@ -20,54 +20,13 @@ commands:
             while [ -z "$(docker version --format '{{.Server.Version}}' 2>/dev/null)" ] ; do
               sleep 1
             done
-  save_docker_cache:
-    parameters:
-      build_log:
-        type: string
-        default: "build.log"
-      key:
-        type: string
-    steps:
-      - run:
-          name: Save Layers to Cache
-          command: |
-            # filter out empty layers
-            IMAGES=""
-            for i in $(sed -n 's/^ ---> \([[:xdigit:]]\+\)\w*$/\1/p' << parameters.build_log >>) ; do
-              if [ "$(docker inspect --format '{{.Size}}' "$i")" -gt 0 ] ; then
-                IMAGES="$IMAGES $i"
-              fi
-            done
-            # save layers (if there are any)
-            mkdir -p /var/cache/layers
-            if [ -n "$IMAGES" ] ; then
-              docker save -o "/var/cache/layers/build.tar" $IMAGES
-            fi
-          no_output_timeout: 15m
-      - save_cache:
-          key: << parameters.key >>
-          paths:
-            - /var/cache/layers
-  restore_docker_cache:
-    parameters:
-      key:
-        type: string
-    steps:
-      - restore_cache:
-          keys:
-            - << parameters.key >>
-      - run:
-          name: Restore Layers from Cache
-          command: docker load -i /var/cache/layers/build.tar || true
-          no_output_timeout: 15m
+
 jobs:
   build_pkg_arm64:
     executor: dockerd_arm64
     steps:
       - checkout
       - wait_for_docker
-      - restore_docker_cache:
-          key: v1-images-arm64
       - run:
           name: Build Docker Image for arm64
           command: |
@@ -86,15 +45,11 @@ jobs:
           root: /run/images
           paths:
             - doorbell-arm64.tar
-      - save_docker_cache:
-          key: v1-images-arm64-{{ .BuildNum }}
   build_pkg_amd64:
     executor: native
     steps:
       - checkout
       - setup_remote_docker
-      - restore_docker_cache:
-          key: v1-images-amd64
       - run:
           name: Build Docker Image for amd64
           command: |
@@ -108,8 +63,6 @@ jobs:
           root: /run/images
           paths:
             - doorbell-amd64.tar
-      - save_docker_cache:
-          key: v1-images-amd64-{{ .BuildNum }}
 
 workflows:
   version: 2
