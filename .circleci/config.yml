@@ -36,15 +36,17 @@ jobs:
             docker cp -a . linuxkit-cli:/workspace
             # build linuxkit package
             docker exec -t linuxkit-cli \
-              linuxkit pkg build -force -disable-content-trust . | tee -a build.log
+              linuxkit pkg build -disable-content-trust .
             # save for push stage
-            mkdir -p /run/images/
-            docker save -o "/run/images/doorbell-arm64.tar" "$(linuxkit pkg show-tag .)-arm64"
-          no_output_timeout: 30m
+            mkdir -p /run/images/arm64
+            TAG="$(linuxkit pkg show-tag .)-arm64"
+            if [ -n "$(docker images -q "$TAG")" ] ; then
+              docker save -o "/run/images/arm64/doorbell.tar" "$TAG"
+            fi
       - persist_to_workspace:
           root: /run/images
           paths:
-            - doorbell-arm64.tar
+            - arm64
   build_pkg_amd64:
     executor: native
     steps:
@@ -54,15 +56,17 @@ jobs:
           name: Build Docker Image for amd64
           command: |
             # build linuxkit package
-            linuxkit pkg build -force -disable-content-trust . | tee -a build.log
+            linuxkit pkg build -disable-content-trust .
             # save for push stage
-            mkdir -p /run/images/
-            docker save -o "/run/images/doorbell-amd64.tar" "$(linuxkit pkg show-tag .)-amd64"
-          no_output_timeout: 30m
+            mkdir -p /run/images/amd64
+            TAG="$(linuxkit pkg show-tag .)-amd64"
+            if [ -n "$(docker images -q "$TAG")" ] ; then
+              docker save -o "/run/images/amd64/doorbell.tar" "$TAG"
+            fi
       - persist_to_workspace:
           root: /run/images
           paths:
-            - doorbell-amd64.tar
+            - amd64
   push:
     executor: native
     steps:
