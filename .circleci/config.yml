@@ -79,6 +79,7 @@ jobs:
             docker exec -t linuxkit-cli \
               linuxkit pkg build -force -disable-content-trust . | tee -a build.log
             # save for push stage
+            mkdir -p /run/images/
             docker save -o "/run/images/doorbell-arm64.tar" "$(linuxkit pkg show-tag .)-arm64"
           no_output_timeout: 30m
       - persist_to_workspace:
@@ -100,6 +101,7 @@ jobs:
             # build linuxkit package
             linuxkit pkg build -force -disable-content-trust . | tee -a build.log
             # save for push stage
+            mkdir -p /run/images/
             docker save -o "/run/images/doorbell-amd64.tar" "$(linuxkit pkg show-tag .)-amd64"
           no_output_timeout: 30m
       - persist_to_workspace:
