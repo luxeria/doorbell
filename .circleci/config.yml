@@ -63,6 +63,22 @@ jobs:
           root: /run/images
           paths:
             - doorbell-amd64.tar
+  push:
+    executor: native
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: /run/images
+      - run:
+          name: Restore Images from Workspace
+          command: find /run/images -type f -name '*.tar' -exec docker load -i '{}' \;
+      - run:
+          name: Log in to Docker
+          command: docker login -u "$DOCKER_LOGIN" -p "$DOCKER_PASSWORD"
+      - run:
+          name: Pushing Docker Image
+          command: linuxkit pkg push -nobuild -disable-content-trust .
 
 workflows:
   version: 2
@@ -70,3 +86,11 @@ workflows:
     jobs:
       - build_pkg_amd64
       - build_pkg_arm64
+      - push:
+          context: dockerhub-creds
+          requires:
+            - build_pkg_amd64
+            - build_pkg_arm64
+          filters:
+            branches:
+              only: master
