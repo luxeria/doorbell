@@ -30,7 +30,7 @@ services:
   - name: chrony
     image: linuxkitrpi/chrony:bd86056d87a452d3afa5407c11e237f6312d78ee
   - name: doorbell
-    image: luxeria/doorbell:55d9e54f74ea7088bce49c17280c1c0674d44cde
+    image: luxeria/doorbell:0b86dd01192d20d2adfdfdbad7ffb25fb35a37be
     env:
      - RECAPTCHA_SITE_KEY=TODO
      - RECAPTCHA_SECRET_KEY=TODO
