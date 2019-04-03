@@ -32,20 +32,16 @@ services:
   - name: doorbell
     image: luxeria/doorbell:0b86dd01192d20d2adfdfdbad7ffb25fb35a37be
     env:
-     - RECAPTCHA_SITE_KEY=TODO
-     - RECAPTCHA_SECRET_KEY=TODO
-     - JWT_SECRET=TODO
+     - RECAPTCHA_SITE_KEY={{ RECAPTCHA_SITE_KEY }}
+     - RECAPTCHA_SECRET_KEY={{ RECAPTCHA_SECRET_KEY }}
+     - JWT_SECRET={{ JWT_SECRET }}
      - DOORBELL_CMD=["/usr/bin/mpg123", "assets/dingdong.mp3"]
 files:
   - path: root/.ssh/authorized_keys
-    contents: "TODO"
+    contents: "{{ SSH_AUTHORIZED_KEYS }}"
     mode: "0600"
   - path: etc/wpa_supplicant/wpa_supplicant.conf
-    contents: |
-     network={
-      ssid="LuXeria_WLAN"
-      psk="TODO"
-     }
+    contents: "{{ WPA_SUPPLICANT_CONFIG }}"
 trust:
   org:
     - linuxkit

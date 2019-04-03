@@ -101,7 +101,7 @@ jobs:
           name: Build LinuxKit raspi.yml
           command: |
             # run linuxkit build on raspi.yml
-            cat raspi.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
+            awk -f template.yml raspi.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
               linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b \
               linuxkit build -dir / -name doorbell -format kernel+squashfs -disable-content-trust -
 
@@ -121,12 +121,16 @@ workflows:
     jobs:
       - build_pkg_amd64
       - build_pkg_arm64
-      - build_linuxkit_image
       - push:
           context: dockerhub-creds
           requires:
             - build_pkg_amd64
             - build_pkg_arm64
+          filters:
+            branches:
+              only: master
+      - build_linuxkit_image
+          #context: raspi-values
           filters:
             branches:
               only: master
