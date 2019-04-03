@@ -100,15 +100,21 @@ jobs:
       - run:
           name: Build LinuxKit raspi.yml
           command: |
+            # run linuxkit build on raspi.yml
             cat raspi.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
               linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b \
-              linuxkit build -dir /raspi -name doorbell -disable-content-trust -
-            docker cp -a linuxkit:/raspi/ /run/linuxkit
+              linuxkit build -dir / -name doorbell -format kernel+squashfs -disable-content-trust -
+
+            # copy out artifacts to workspace
+            mkdir -p /run/linuxkit
+            for f in doorbell-{cmdline,kernel,squashfs.img} ; do
+              docker cp -a linuxkit:/$f /run/linuxkit
+            done
           no_output_timeout: 20m
       - persist_to_workspace:
           root: /run/linuxkit
           paths:
-            - raspi
+            - doorbell-*
 workflows:
   version: 2
   build_and_push:
