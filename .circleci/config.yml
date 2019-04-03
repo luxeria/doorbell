@@ -107,7 +107,7 @@ jobs:
 
             # copy out artifacts to workspace
             mkdir -p /run/linuxkit
-            for f in doorbell-{cmdline,kernel,squashfs.img} ; do
+            for f in doorbell-cmdline doorbell-kernel doorbell-squashfs.img ; do
               docker cp -a linuxkit:/$f /run/linuxkit
             done
           no_output_timeout: 20m
