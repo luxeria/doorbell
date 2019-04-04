@@ -101,7 +101,7 @@ jobs:
           name: Build LinuxKit raspi.yml
           command: |
             # run linuxkit build on raspi.yml
-            awk -f template.yml raspi.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
+            awk -f template.awk raspi.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
               linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b \
               linuxkit build -dir / -name doorbell -format kernel+squashfs -disable-content-trust -
 
