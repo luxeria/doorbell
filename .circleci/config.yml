@@ -129,7 +129,7 @@ workflows:
           filters:
             branches:
               only: master
-      - build_linuxkit_image
+      - build_linuxkit_image:
           #context: raspi-values
           filters:
             branches:
