@@ -38,10 +38,10 @@ services:
      - DOORBELL_CMD=["/usr/bin/mpg123", "assets/dingdong.mp3"]
 files:
   - path: root/.ssh/authorized_keys
-    contents: "{{ SSH_AUTHORIZED_KEYS }}"
+    contents: {{ SSH_AUTHORIZED_KEYS }}
     mode: "0600"
   - path: etc/wpa_supplicant/wpa_supplicant.conf
-    contents: "{{ WPA_SUPPLICANT_CONFIG }}"
+    contents: {{ WPA_SUPPLICANT_CONFIG }}
 trust:
   org:
     - linuxkit
