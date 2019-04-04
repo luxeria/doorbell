@@ -121,7 +121,7 @@ jobs:
               --output /run/linuxkit/doorbell-raspi.tar.gz.gpg
           no_output_timeout: 20m
       - store_artifacts:
-          path: /run/linuxkit/doorbell-raspi.tar.gpg
+          path: /run/linuxkit/doorbell-raspi.tar.gz.gpg
 workflows:
   version: 2
   build_and_push:
