@@ -3,10 +3,10 @@ version: 2.1
 executors:
   native:
     docker:
-      - image: linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b
+      - image: linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11
   dockerd_arm64:
     docker:
-      - image: linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b
+      - image: linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11
         environment:
           DOCKER_HOST: tcp://localhost:2375
       - image: linuxkitrpi/dockerd-arm64:055c8da09206ccc107a12ccd2d095507ae1f8c59
@@ -32,7 +32,7 @@ jobs:
           command: |
             # spawn a background container for running the linuxkit-cli on arm64
             docker run -t -i -d -e DOCKER_HOST -v /workspace -w /workspace \
-              --network host --name linuxkit-cli linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b cat
+              --network host --name linuxkit-cli linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11 cat
             docker cp -a . linuxkit-cli:/workspace
             # build linuxkit package
             docker exec -t linuxkit-cli \
@@ -92,7 +92,7 @@ jobs:
             if [ -n "$IMAGES" ]; then
               linuxkit pkg push -nobuild -disable-content-trust .
             fi
-  build_linuxkit_image:
+  build_raspi_image:
     executor: dockerd_arm64
     steps:
       - checkout
@@ -101,20 +101,27 @@ jobs:
           name: Build LinuxKit raspi.yml
           command: |
             # run linuxkit build on raspi.yml
-            awk -f template.awk raspi.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
-              linuxkitrpi/linuxkit-cli:2cfbeb088840f54ece18598229db01594a833a7b \
+            awk -f template.awk raspi.yml > doorbell-build.yml
+            cat doorbell-build.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
+              linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11 \
               linuxkit build -dir / -name doorbell -format kernel+squashfs -disable-content-trust -
 
-            # copy out artifacts to workspace
-            mkdir -p /run/linuxkit
-            for f in doorbell-cmdline doorbell-kernel doorbell-squashfs.img ; do
-              docker cp -a linuxkit:/$f /run/linuxkit
+            # copy out artifacts to current directory
+            FILES="doorbell-cmdline doorbell-kernel doorbell-squashfs.img"
+            for f in $FILES ; do
+              docker cp -a linuxkit:/$f .
             done
+
+            # encrypt created artifacts
+            RECIPIENTS="7E18B2FAAD7378D6"
+            gpg --recv-keys $RECIPIENTS
+            mkdir -p /run/linuxkit/
+            tar cvz doorbell-build.yml $FILES | gpg --encrypt --trust-model always \
+              $(printf ' --recipient %s' $RECIPIENTS) \
+              --output /run/linuxkit/doorbell-raspi.tar.gz.gpg
           no_output_timeout: 20m
-      - persist_to_workspace:
-          root: /run/linuxkit
-          paths:
-            - doorbell-*
+      - store_artifacts:
+          path: /run/linuxkit/doorbell-raspi.tar.gpg
 workflows:
   version: 2
   build_and_push:
@@ -129,7 +136,7 @@ workflows:
           filters:
             branches:
               only: master
-      - build_linuxkit_image:
+      - build_raspi_image:
           #context: raspi-values
           filters:
             branches:
