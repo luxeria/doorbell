@@ -104,7 +104,7 @@ jobs:
             awk -f template.awk raspi.yml > doorbell-build.yml
             cat doorbell-build.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
               linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11 \
-              linuxkit build -name doorbell -format tar -o - -disable-content-trust - > doorbell.tar
+              linuxkit build -format tar -o - -disable-content-trust - > doorbell.tar
 
             # encrypt created artifacts
             RECIPIENTS="7E18B2FAAD7378D6"
