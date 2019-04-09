@@ -104,19 +104,13 @@ jobs:
             awk -f template.awk raspi.yml > doorbell-build.yml
             cat doorbell-build.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
               linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11 \
-              linuxkit build -dir / -name doorbell -format kernel+squashfs -disable-content-trust -
-
-            # copy out artifacts to current directory
-            FILES="doorbell-cmdline doorbell-kernel doorbell-squashfs.img"
-            for f in $FILES ; do
-              docker cp -a linuxkit:/$f .
-            done
+              linuxkit build -name doorbell -format tar -output - -disable-content-trust - > doorbell.tar
 
             # encrypt created artifacts
             RECIPIENTS="7E18B2FAAD7378D6"
             gpg --recv-keys $RECIPIENTS
             mkdir -p /run/linuxkit/
-            tar cvz doorbell-build.yml $FILES | gpg --encrypt --trust-model always \
+            tar cvz doorbell-build.yml doorbell.tar | gpg --encrypt --trust-model always \
               $(printf ' --recipient %s' $RECIPIENTS) \
               --output /run/linuxkit/doorbell-raspi.tar.gz.gpg
           no_output_timeout: 20m
