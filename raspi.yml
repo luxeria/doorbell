@@ -1,5 +1,5 @@
 kernel:
-  image: linuxkitrpi/kernel:082152023e48db2012df709f3578447cd8508d94
+  image: linuxkitrpi/kernel:745095f3bb1afe0f213ad15cff79f95a1aaaf1f9
   cmdline: "console=tty1 console=ttyS0,115200"
 init:
   - linuxkit/init:v0.7
@@ -27,7 +27,6 @@ onboot:
           createInRoot: true
       bindNS:
         net: /run/netns/wg0
-
 services:
   - name: getty
     image: linuxkit/getty:v0.7
