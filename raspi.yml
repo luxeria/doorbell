@@ -42,9 +42,11 @@ services:
   - name: chrony
     image: linuxkitrpi/chrony:bd86056d87a452d3afa5407c11e237f6312d78ee
   - name: doorbell
-    image: luxeria/doorbell:0b86dd01192d20d2adfdfdbad7ffb25fb35a37be
+    image: luxeria/doorbell:b7ede59f046f99ba8c3141665091fd554a3bafc3
     net: /run/netns/wg0
     env:
+     - TZ=Europe/Zurich
+     - OPENING_HOURS=We 18:00-00:30
      - RECAPTCHA_SITE_KEY={{ RECAPTCHA_SITE_KEY }}
      - RECAPTCHA_SECRET_KEY={{ RECAPTCHA_SECRET_KEY }}
      - JWT_SECRET={{ JWT_SECRET }}
