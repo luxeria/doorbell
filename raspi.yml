@@ -14,15 +14,6 @@ onboot:
   - name: mount
     image: linuxkit/mount:v0.7
     command: ["/usr/bin/mountie", "-label", "persistent", "/var/lib/chrony"]
-    
-services:
-  - name: getty
-    image: linuxkit/getty:v0.7
-    env:
-     - INSECURE=true
-  - name: dhcpcd
-    image: linuxkit/dhcpcd:v0.7
-    command: ["/sbin/dhcpcd", "--nobackground", "-f", "/dhcpcd.conf", "--allowinterfaces", "eth*,wlan*"]
   - name: wg0
     image: linuxkit/ip:v0.7
     net: new
@@ -36,6 +27,15 @@ services:
           createInRoot: true
       bindNS:
         net: /run/netns/wg0
+
+services:
+  - name: getty
+    image: linuxkit/getty:v0.7
+    env:
+     - INSECURE=true
+  - name: dhcpcd
+    image: linuxkit/dhcpcd:v0.7
+    command: ["/sbin/dhcpcd", "--nobackground", "-f", "/dhcpcd.conf", "--allowinterfaces", "eth*,wlan*"]
   - name: sshd
     image: linuxkit/sshd:v0.7
   - name: wpa_supplicant
