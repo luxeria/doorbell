@@ -42,7 +42,7 @@ services:
   - name: chrony
     image: linuxkitrpi/chrony:bd86056d87a452d3afa5407c11e237f6312d78ee
   - name: doorbell
-    image: luxeria/doorbell:b7ede59f046f99ba8c3141665091fd554a3bafc3
+    image: luxeria/doorbell:b0db7178d91d51a8a7c584f3a788ce56ccab0d96
     net: /run/netns/wg0
     env:
      - TZ=Europe/Zurich
