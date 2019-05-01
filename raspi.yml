@@ -64,11 +64,11 @@ files:
       [Interface]
       PrivateKey = {{ WG_PRIVKEY }}
       Address = 10.10.0.200/24
-      DNS = 8.8.8.8
+      DNS = 1.1.1.1
 
       [Peer]
       PublicKey = UXx+RqaD1kJzKyWdljMhcZ3wjVS+mTlafMMe7jsXyh0=
-      Endpoint = public.luxeria.ch:51820
+      Endpoint = 62.2.142.252:51820
       AllowedIPs = 0.0.0.0/0
       PersistentKeepalive = 25
   - path: boot/config.txt
