@@ -46,6 +46,7 @@ services:
     net: /run/netns/wg0
     binds:
       - /etc/wireguard/resolv.conf:/etc/resolv.conf
+      - /dev/snd:/dev/snd
     env:
      - TZ=Europe/Zurich
      - OPENING_HOURS=We 18:00-00:30
