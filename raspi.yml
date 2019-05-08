@@ -51,6 +51,7 @@ services:
      - OPENING_HOURS=We 18:00-00:30
      - RECAPTCHA_SITE_KEY={{ RECAPTCHA_SITE_KEY }}
      - RECAPTCHA_SECRET_KEY={{ RECAPTCHA_SECRET_KEY }}
+     - RECAPTCHA_MIN_SCORE=0.3
      - JWT_SECRET={{ JWT_SECRET }}
      - DOORBELL_CMD=["/usr/bin/mpg123", "assets/dingdong.mp3"]
 files:
