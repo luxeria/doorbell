@@ -1,73 +1,35 @@
 version: 2.1
 
-executors:
-  native:
-    docker:
-      - image: linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11
-  dockerd_arm64:
-    docker:
-      - image: linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11
-        environment:
-          DOCKER_HOST: tcp://localhost:2375
-      - image: linuxkitrpi/dockerd-arm64:055c8da09206ccc107a12ccd2d095507ae1f8c59
-
-commands:
-  wait_for_docker:
-    steps:
-      - run:
-          name: Wait for dockerd to come up
-          command: |
-            while [ -z "$(docker version --format '{{.Server.Version}}' 2>/dev/null)" ] ; do
-              sleep 1
-            done
+orbs:
+  builder: linuxkitrpi/builder@0.1.2
 
 jobs:
-  build_pkg_arm64:
-    executor: dockerd_arm64
+  build_pkg:
+    parameters:
+      arch:
+        type: enum
+        enum: ["amd64", "arm64"]
+      setup_remote_docker:
+        type: boolean
+    executor: builder/<< parameters.arch >>
     steps:
       - checkout
-      - wait_for_docker
+      - when:
+          condition: << parameters.setup_remote_docker >>
+          steps:
+            - setup_remote_docker
+      - builder/wait_for_docker
       - run:
-          name: Build Docker Image for arm64
+          name: Build Docker Image for << parameters.arch >>
           command: |
-            # spawn a background container for running the linuxkit-cli on arm64
-            docker run -t -i -d -e DOCKER_HOST -v /workspace -w /workspace \
-              --network host --name linuxkit-cli linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11 cat
-            docker cp -a . linuxkit-cli:/workspace
-            # build linuxkit package
-            docker exec -t linuxkit-cli \
-              linuxkit pkg build -disable-content-trust .
-            # save for push stage
-            mkdir -p /run/images/arm64
-            TAG="$(linuxkit pkg show-tag .)-arm64"
-            if [ -n "$(docker images -q "$TAG")" ] ; then
-              docker save -o "/run/images/arm64/doorbell.tar" "$TAG"
-            fi
+            linuxkit-cli.sh agent start .
+            linuxkit-cli.sh pkg build .
+            linuxkit-cli.sh save -d build $(linuxkit-cli.sh pkg show-tag .)
       - persist_to_workspace:
-          root: /run/images
+          root: build
           paths:
-            - arm64
-  build_pkg_amd64:
-    executor: native
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker Image for amd64
-          command: |
-            # build linuxkit package
-            linuxkit pkg build -disable-content-trust .
-            # save for push stage
-            mkdir -p /run/images/amd64
-            TAG="$(linuxkit pkg show-tag .)-amd64"
-            if [ -n "$(docker images -q "$TAG")" ] ; then
-              docker save -o "/run/images/amd64/doorbell.tar" "$TAG"
-            fi
-      - persist_to_workspace:
-          root: /run/images
-          paths:
-            - amd64
-  push:
+            - "*.tar"
+  push_pkg:
     executor: native
     steps:
       - checkout
@@ -83,34 +45,25 @@ jobs:
       - run:
           name: Pushing Docker Image
           command: |
-            # push images from previous stages (if any)
-            IMAGES=$(docker images --filter 'reference=luxeria/doorbell:*' --format '{{.Repository}}:{{.Tag}}')
-            for img in $IMAGES ; do
-              docker push "$img"
-            done
-            # push multiarch linuxkit image
-            if [ -n "$IMAGES" ]; then
-              linuxkit pkg push -nobuild -disable-content-trust .
-            fi
+            linuxkit-cli.sh agent start .
+            linuxkit-cli.sh push $(linuxkit-cli.sh pkg show-tag .)
   build_raspi_image:
-    executor: dockerd_arm64
+    executor: builder/arm64
     steps:
       - checkout
-      - wait_for_docker
+      - builder/wait_for_docker
       - run:
           name: Build LinuxKit raspi.yml
           command: |
             # run linuxkit build on raspi.yml
-            awk -f template.awk raspi.yml > doorbell-build.yml
-            cat doorbell-build.yml | docker run -i -e DOCKER_HOST --network host --name linuxkit \
-              linuxkitrpi/linuxkit-cli:54ffd7bd1c1d42a9aa0027474720aa2360c45b11 \
-              linuxkit build -format tar -o - -disable-content-trust - > doorbell.tar
+            awk -f template.awk raspi.yml | tee doorbell.yml \
+              linuxkit-cli.sh yml rpi3-squashfs-build -o - > doorbell.img
 
             # encrypt created artifacts
             RECIPIENTS="7E18B2FAAD7378D6"
             gpg --recv-keys $RECIPIENTS
             mkdir -p /run/linuxkit/
-            tar cvz doorbell-build.yml doorbell.tar | gpg --encrypt --trust-model always \
+            tar cvz doorbell.yml doorbell.img | gpg --encrypt --trust-model always \
               $(printf ' --recipient %s' $RECIPIENTS) \
               --output /run/linuxkit/doorbell-raspi.tar.gz.gpg
           no_output_timeout: 20m
@@ -120,9 +73,13 @@ workflows:
   version: 2
   build_and_push:
     jobs:
-      - build_pkg_amd64
-      - build_pkg_arm64
-      - push:
+      - build_pkg_amd64:
+          arch: amd64
+          setup_remote_docker: true
+      - build_pkg_arm64:
+          arch: arm64
+          setup_remote_docker: false
+      - push_pkg:
           context: dockerhub-creds
           requires:
             - build_pkg_amd64
