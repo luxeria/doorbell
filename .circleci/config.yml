@@ -58,7 +58,7 @@ jobs:
           command: |
             # run linuxkit build on raspi.yml
             awk -f template.awk raspi.yml | tee doorbell.yml | \
-              linuxkit-cli.sh yml rpi3-squashfs-build -o - > doorbell.img
+              linuxkit-cli.sh yml rpi3-squashfs-build -o - - > doorbell.img
 
             # encrypt created artifacts
             RECIPIENTS="7E18B2FAAD7378D6"
