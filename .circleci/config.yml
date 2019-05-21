@@ -74,10 +74,12 @@ workflows:
   version: 2
   build_and_push:
     jobs:
-      - build_pkg_amd64:
+      - build_pkg:
+          name: build_pkg_amd64
           arch: amd64
           setup_remote_docker: true
-      - build_pkg_arm64:
+      - build_pkg:
+          name: build_pkg_arm64
           arch: arm64
           setup_remote_docker: false
       - push_pkg:
