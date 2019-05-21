@@ -31,7 +31,7 @@ jobs:
           paths:
             - "*.tar"
   push_pkg:
-    executor: native
+    executor: builder/amd64
     steps:
       - checkout
       - setup_remote_docker
