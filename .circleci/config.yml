@@ -24,8 +24,8 @@ jobs:
           name: Build Docker Image for << parameters.arch >>
           command: |
             linuxkit-cli.sh agent start .
-            linuxkit-cli.sh pkg build .
-            linuxkit-cli.sh save -d build $(linuxkit-cli.sh pkg show-tag .)
+            linuxkit-cli.sh pkg build linuxkit/pkg
+            linuxkit-cli.sh save -d build $(linuxkit-cli.sh pkg show-tag linuxkit/pkg)
       - persist_to_workspace:
           root: build
           paths:
@@ -47,7 +47,7 @@ jobs:
           name: Pushing Docker Image
           command: |
             linuxkit-cli.sh agent start .
-            linuxkit-cli.sh push $(linuxkit-cli.sh pkg show-tag .)
+            linuxkit-cli.sh push $(linuxkit-cli.sh pkg show-tag linuxkit/pkg)
   build_raspi_image:
     executor: builder/arm64
     steps:
@@ -58,7 +58,7 @@ jobs:
           command: |
             # run linuxkit build on raspi.yml
             linuxkit-cli.sh agent start .
-            awk -f template.awk raspi.yml | tee doorbell.yml | \
+            awk -f template.awk linuxkit/images/raspi.yml | tee doorbell.yml | \
               linuxkit-cli.sh yml rpi3-squashfs-build -o - - > doorbell.img
 
             # encrypt created artifacts
