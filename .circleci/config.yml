@@ -23,13 +23,13 @@ jobs:
       - run:
           name: Build Docker Image for << parameters.arch >>
           command: |
+            mkdir -p build
             linuxkit-cli.sh agent start .
             linuxkit-cli.sh pkg build linuxkit/pkg
             linuxkit-cli.sh save -d build $(linuxkit-cli.sh pkg show-tag linuxkit/pkg)
       - persist_to_workspace:
-          root: build
-          paths:
-            - "*.tar"
+          root: .
+          paths: build
   push_pkg:
     executor: builder/amd64
     steps:
