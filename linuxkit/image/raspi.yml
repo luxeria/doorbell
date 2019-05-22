@@ -44,9 +44,6 @@ services:
   - name: doorbell
     image: luxeria/doorbell:b0db7178d91d51a8a7c584f3a788ce56ccab0d96
     net: /run/netns/wg0
-    binds:
-      - /etc/wireguard/resolv.conf:/etc/resolv.conf
-      - /dev/snd:/dev/snd
     env:
      - TZ=Europe/Zurich
      - OPENING_HOURS=We 18:00-00:30
@@ -65,7 +62,7 @@ files:
       ssid="{{ WLAN_SSID }}"
       psk="{{ WLAN_PSK }}"
      }
-  - path: etc/wireguard/resolv.conf
+  - path: run/resolvconf/resolv.conf.head
     contents: |
       nameserver 1.1.1.1
   - path: etc/wireguard/wg0.conf
