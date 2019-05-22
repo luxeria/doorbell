@@ -62,7 +62,7 @@ jobs:
               linuxkit-cli.sh yml rpi3-squashfs-build -o - - > doorbell.img
 
             # encrypt created artifacts
-            RECIPIENTS="7E18B2FAAD7378D6"
+            RECIPIENTS="7E18B2FAAD7378D6 05600B0C83EA347B"
             gpg --recv-keys $RECIPIENTS
             mkdir -p /run/linuxkit/
             tar cvz doorbell.yml doorbell.img | gpg --encrypt --trust-model always \
