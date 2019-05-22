@@ -7,3 +7,7 @@ config:
     - /dev/snd:/dev/snd
   capabilities:
     - CAP_SYS_ADMIN
+extra-sources:
+  - ../../assets:assets
+  - ../../cmd:cmd
+  - ../../pkg:pkg
