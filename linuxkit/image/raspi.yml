@@ -73,7 +73,7 @@ files:
 
       [Peer]
       PublicKey = UXx+RqaD1kJzKyWdljMhcZ3wjVS+mTlafMMe7jsXyh0=
-      Endpoint = 62.2.142.252:51820
+      Endpoint = 77.109.148.222:51820
       AllowedIPs = 0.0.0.0/0
       PersistentKeepalive = 25
   - path: boot/config.txt
